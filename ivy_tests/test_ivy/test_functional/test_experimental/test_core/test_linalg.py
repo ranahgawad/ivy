@@ -272,7 +272,7 @@ def test_diagflat(
     padding_value = padding_value[0][0]
 
     helpers.test_function(
-        ground_truth_backend=ground_truth_backend,
+        ground_truth_backend=ground_truth_bacteskend,
         input_dtypes=x_dtype + ["int64"] + padding_value_dtype,
         test_flags=test_flags,
         fw=backend_fw,
