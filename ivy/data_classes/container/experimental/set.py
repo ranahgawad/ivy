@@ -19,9 +19,9 @@ class _ContainerWithSetExperimental(ContainerBase):
             "intersection",
             arr1,
             arr2,
-            assume_unique=assume_unique,
-            return_indices=return_indices,
-            validate_indices=validate_indices,
+            assume_unique,
+            return_indices,
+            validate_indices,
             out=out,
         )
     
@@ -38,9 +38,9 @@ class _ContainerWithSetExperimental(ContainerBase):
         return self.static_intersection(
             self,
             arr2,
-            assume_unique=assume_unique,
-            return_indices=return_indices,
-            validate_indices=validate_indices,
+            assume_unique,
+            return_indices,
+            validate_indices,
             out=out,
         )
 

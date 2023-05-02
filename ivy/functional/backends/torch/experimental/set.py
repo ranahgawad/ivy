@@ -17,14 +17,41 @@ def intersection(
     *,
     out: torch.Tensor = None,
 ) -> torch.Tensor:
-    arr1 = torch.unique(arr1)
-    arr2 = torch.unique(arr2)
+    ar1 = torch.unique(ar1)
+    ar2 = torch.unique(ar2)
     
-
-    aux = torch.cat((arr1, arr2))
+    aux = torch.cat((ar1, ar2))
     aux = aux.sort()
 
     mask = aux[0][1:] == aux[0][:-1]
     int1d = aux[0][:-1][mask]
 
-    return int1d
+    if return_indices:
+        idx1 = a.unsqueeze(2) == b.unsqueeze(1)
+        idx1 = idx1.nonzero()
+        idx1_ = idx1[:, :2]
+
+        matches_len = idx1[:,0].unique(return_counts=True)[1]
+        if (matches_len == matches_len[0]).all():
+            ar1_indices = idx1[:, 1].contiguous().view(-1, matches_len[0])
+
+        ar1_indices = ar1_indices[torch.arange(ar1_indices.size(0)).unsqueeze(1), idx1[:, 2].view_as(ar1_indices)].flatten()
+     
+
+        idx2 = c.unsqueeze(2) == b.unsqueeze(1)
+        idx2 = idx2.nonzero() 
+
+        idx2_ = idx2[:, :2]
+
+
+        matches_len = idx2[:,0].unique(return_counts=True)[1]
+        if (matches_len == matches_len[0]).all():
+            ar2_indices = idx2[:, 1].contiguous().view(-1, matches_len[0])
+            
+
+        ar2_indices = ar2_indices[torch.arange(ar2_indices.size(0)).unsqueeze(1), idx2[:, 2].view_as(ar2_indices)].flatten()
+       
+
+        return int1d, ar1_indices, ar2_indices
+    else:
+        return int1d

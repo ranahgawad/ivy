@@ -17,4 +17,4 @@ def intersection(
     *,
     out: Optional[JaxArray] = None,
 ) -> JaxArray:
-    return jnp.intersect1d(arr1, arr2, assume_unique, return_indices=False)
+    return jnp.intersect1d(arr1, arr2, assume_unique, return_indices)

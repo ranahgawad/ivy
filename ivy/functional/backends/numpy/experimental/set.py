@@ -14,4 +14,4 @@ def intersection(
     *,
     out: Optional[np.ndarray] = None,
 ) -> np.ndarray:
-    return np.intersect1d(arr1, arr2, assume_unique, return_indices=False)
+    return np.intersect1d(arr1, arr2, assume_unique, return_indices)
