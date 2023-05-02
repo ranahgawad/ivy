@@ -1,9 +1,10 @@
 """Collection of PyTorch general functions, wrapped to fit Ivy syntax and signature."""
 # global
 from functools import reduce
+import math
 from numbers import Number
 from operator import mul
-from typing import Optional, Union, Sequence, Callable, List
+from typing import Optional, Union, Sequence, Callable, List, Tuple
 
 try:
     import functorch
@@ -409,9 +410,11 @@ def scatter_nd(
     # handle numeric updates
     updates = torch.tensor(
         [updates] if isinstance(updates, (float, int, bool)) else updates,
-        dtype=ivy.dtype(out, as_native=True)
-        if ivy.exists(out)
-        else ivy.default_dtype(item=updates, as_native=True),
+        dtype=(
+            ivy.dtype(out, as_native=True)
+            if ivy.exists(out)
+            else ivy.default_dtype(item=updates, as_native=True)
+        ),
     )
 
     # handle non-tensor indices
@@ -432,9 +435,7 @@ def scatter_nd(
         shape = (
             shape
             if ivy.exists(shape)
-            else out.shape
-            if ivy.exists(out)
-            else updates.shape
+            else out.shape if ivy.exists(out) else updates.shape
         )
         indices = _parse_ellipsis(indices, len(shape))
         indices = torch.stack(
@@ -442,9 +443,11 @@ def scatter_nd(
                 torch.reshape(value, (-1,))
                 for value in torch.meshgrid(
                     *[
-                        torch.range(0, s - 1)
-                        if idx == slice(None, None, None)
-                        else torch.Tensor([idx % s])
+                        (
+                            torch.range(0, s - 1)
+                            if idx == slice(None, None, None)
+                            else torch.Tensor([idx % s])
+                        )
                         for s, idx in zip(shape, indices)
                     ],
                     indexing="ij",
@@ -463,9 +466,7 @@ def scatter_nd(
             shape = (
                 shape
                 if ivy.exists(shape)
-                else out.shape
-                if ivy.exists(out)
-                else updates.shape
+                else out.shape if ivy.exists(out) else updates.shape
             )
             indices = _parse_index(indices, len(shape))
             indices = [
@@ -474,9 +475,11 @@ def scatter_nd(
                         torch.reshape(value, (-1,))
                         for value in torch.meshgrid(
                             *[
-                                torch.range(0, s - 1)
-                                if idx == slice(None, None, None)
-                                else torch.tensor([idx % s])
+                                (
+                                    torch.range(0, s - 1)
+                                    if idx == slice(None, None, None)
+                                    else torch.tensor([idx % s])
+                                )
                                 for s, idx in zip(shape, index)
                             ],
                             indexing="xy",
@@ -632,3 +635,9 @@ isin.support_native_out = True
 
 def itemsize(x: torch.tensor) -> int:
     return x.element_size()
+
+
+def strides(x: torch.tensor) -> Tuple[int]:
+    return tuple(
+        [int(stride * math.ceil(ivy.dtype_bits(x.dtype) / 8)) for stride in x.stride()]
+    )

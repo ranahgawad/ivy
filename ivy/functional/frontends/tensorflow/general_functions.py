@@ -223,6 +223,11 @@ def identity(input, name=None):
     return ivy.copy_array(input)
 
 
+@to_ivy_arrays_and_back
+def identity_n(input, name=None):
+    return [ivy.copy_array(x) for x in input]
+
+
 def stack(values, axis=0, name="stack"):
     return ivy.stack(values, axis=axis)
 
@@ -255,8 +260,7 @@ def boolean_mask(tensor, mask, axis=None, name=None):
             k + axis,
             n,
             allow_equal=True,
-            message="Value of axis must be \
-                                           such that axis + dim(mask) <= dim(tensor)",
+            message="Value of axis must be such that axis + dim(mask) <= dim(tensor)",
         )
         tensor_shape = ivy.shape(tensor)
         for i in range(axis - 1, -1, -1):
@@ -434,6 +438,7 @@ def where(condition: ivy.Array, x=None, y=None, name=None):
         return ivy.where(condition, x, y)
 
 
+@to_ivy_arrays_and_back
 def roll(input, shift, axis, name=None):
     return ivy.roll(input, shift, axis=axis)
 
