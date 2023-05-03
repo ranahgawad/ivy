@@ -18,16 +18,12 @@ def intersection(
     *,
     out: paddle.Tensor = None,
 ) -> paddle.Tensor:
-    if not assume_unique:
-        if return_indices:
-            ar1, ind1 = paddle.unique(ar1, return_index=True)
-            ar2, ind2 = paddle.unique(ar2, return_index=True)
-        else:
-            ar1 = paddle.unique(ar1)
-            ar2 = paddle.unique(ar2)
+    if return_indices:
+        ar1, ind1 = paddle.unique(arr1, return_index=True)
+        ar2, ind2 = paddle.unique(arr2, return_index=True)
     else:
-        ar1 = ar1.ravel()
-        ar2 = ar2.ravel()
+        ar1 = paddle.unique(arr1)
+        ar2 = paddle.unique(arr2)
 
     aux = paddle.concat((ar1, ar2))
     if return_indices:
@@ -42,9 +38,8 @@ def intersection(
     if return_indices:
         ar1_indices = aux_sort_indices[:-1][mask]
         ar2_indices = aux_sort_indices[1:][mask] - ar1.size
-        if not assume_unique:
-            ar1_indices = ind1[ar1_indices]
-            ar2_indices = ind2[ar2_indices]
+        ar1_indices = ind1[ar1_indices]
+        ar2_indices = ind2[ar2_indices]
 
         return int1d, ar1_indices, ar2_indices
     else:

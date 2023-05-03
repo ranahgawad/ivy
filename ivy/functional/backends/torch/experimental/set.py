@@ -17,41 +17,47 @@ def intersection(
     *,
     out: torch.Tensor = None,
 ) -> torch.Tensor:
-    ar1 = torch.unique(ar1)
-    ar2 = torch.unique(ar2)
-    
-    aux = torch.cat((ar1, ar2))
-    aux = aux.sort()
+    if return_indices:
+        ar1 = arr1.flatten()
+        perm = arr1.argsort()
+        aux = ar1[perm]
+        mask = torch.empty(aux.shape, dtype=torch.bool)
+        mask[:1] = True
+        mask[1:] = aux[1:] != aux[:-1]
+        ret1 = (aux[mask],)
+        ret1 += (perm[mask],)
+        ar1, ind1 = ret1
 
-    mask = aux[0][1:] == aux[0][:-1]
-    int1d = aux[0][:-1][mask]
+        ar2 = arr2.flatten()
+        perm = arr2.argsort()
+        aux = ar2[perm]
+        mask = torch.empty(aux.shape, dtype=torch.bool)
+        mask[:1] = True
+        mask[1:] = aux[1:] != aux[:-1]
+        ret2 = (aux[mask],)
+        ret2 += (perm[mask],)
+        ar2, ind2 = ret2
+    else:
+        ar1 = torch.unique(arr1)
+        ar2 = torch.unique(arr2)
+ 
+
+    aux = torch.cat((ar1, ar2))
+    if return_indices:
+        aux_sort_indices = aux.argsort()
+        aux = aux[aux_sort_indices]
+    else:
+         aux.sort()
+
+    mask = aux[1:] == aux[:-1]
+    int1d = aux[:-1][mask]
 
     if return_indices:
-        idx1 = a.unsqueeze(2) == b.unsqueeze(1)
-        idx1 = idx1.nonzero()
-        idx1_ = idx1[:, :2]
-
-        matches_len = idx1[:,0].unique(return_counts=True)[1]
-        if (matches_len == matches_len[0]).all():
-            ar1_indices = idx1[:, 1].contiguous().view(-1, matches_len[0])
-
-        ar1_indices = ar1_indices[torch.arange(ar1_indices.size(0)).unsqueeze(1), idx1[:, 2].view_as(ar1_indices)].flatten()
-     
-
-        idx2 = c.unsqueeze(2) == b.unsqueeze(1)
-        idx2 = idx2.nonzero() 
-
-        idx2_ = idx2[:, :2]
-
-
-        matches_len = idx2[:,0].unique(return_counts=True)[1]
-        if (matches_len == matches_len[0]).all():
-            ar2_indices = idx2[:, 1].contiguous().view(-1, matches_len[0])
-            
-
-        ar2_indices = ar2_indices[torch.arange(ar2_indices.size(0)).unsqueeze(1), idx2[:, 2].view_as(ar2_indices)].flatten()
-       
-
+        ar1_indices = aux_sort_indices[:-1][mask]
+        ar2_indices = aux_sort_indices[1:][mask] - torch.numel(ar1)
+        ar1_indices = ind1[ar1_indices]
+        ar2_indices = ind2[ar2_indices]
         return int1d, ar1_indices, ar2_indices
     else:
         return int1d
+
